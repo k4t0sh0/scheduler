@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学校スケジュール ver10</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+
+    <!-- ログイン画面 -->
+    <div id="authScreen">
+        <div class="auth-container">
+            <h2>📚 SchoolSchedule for 2-2</h2>
+
+            <div id="loginForm">
+                <h3>ログイン</h3>
+                <input type="email" id="loginEmail" placeholder="メールアドレス">
+                <input type="password" id="loginPassword" placeholder="パスワード">
+                <button onclick="login()">ログイン</button>
+                <p>アカウントをお持ちでない方 <a href="#" onclick="showRegister(); return false;">新規登録</a></p>
+            </div>
+
+            <div id="registerForm" style="display:none;">
+                <h3>新規登録</h3>
+                <input type="email" id="registerEmail" placeholder="メールアドレス">
+                <input type="password" id="registerPassword" placeholder="パスワード（6文字以上）">
+                <button onclick="register()">登録</button>
+                <p>既にアカウントをお持ちの方 <a href="#" onclick="showLogin(); return false;">ログイン</a></p>
+            </div>
+
+            <!-- メール確認待ち画面 -->
+            <div id="emailVerificationForm" style="display:none;">
+                <h3>📧 メール確認</h3>
+                <p>確認メールを送信しました。</p>
+                <p><strong id="verificationEmail"></strong></p>
+                <p>メール内のリンクをクリックして、メールアドレスを確認してください。</p>
+
+                <div class="verification-actions">
+                    <button onclick="checkEmailVerified()" class="verify-btn">
+                        確認完了・ログイン
+                    </button>
+                    <button onclick="resendVerificationEmail()" class="resend-btn">
+                        確認メールを再送信
+                    </button>
+                    <button onclick="backToLogin()" class="back-btn">
+                        ログイン画面に戻る
+                    </button>
+                </div>
+
+                <div id="verificationMessage" class="info-message"></div>
+            </div>
+
+            <div class="divider" id="divider">または</div>
+
+            <button onclick="anonymousLogin()" class="anonymous-btn" id="anonymousBtn">
+                👤 匿名で参加（閲覧のみ）
+            </button>
+
+            <div id="authError" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- メインアプリ画面 -->
+    <div id="appScreen" style="display:none;">
+        <div class="container">
+            <div class="header">
+                <h1>📚 学校スケジュール</h1>
+                <div class="date-display" id="dateDisplay"></div>
+
+                <!-- 曜日ボタン -->
+                <div class="day-selector">
+                    <button class="day-btn active" onclick="switchDay('monday')">月</button>
+                    <button class="day-btn" onclick="switchDay('tuesday')">火</button>
+                    <button class="day-btn" onclick="switchDay('wednesday')">水</button>
+                    <button class="day-btn" onclick="switchDay('thursday')">木</button>
+                    <button class="day-btn" onclick="switchDay('friday')">金</button>
+                </div>
+
+                <!-- ユーザー情報 -->
+                <div class="user-info">
+                    <span id="userStatus"></span>
+                    <button onclick="sendEmail()" id="emailBtn" class="email-btn">📧 メール送信</button>
+                    <button onclick="logout()" class="logout-btn">ログアウト</button>
+                </div>
+            </div>
+
+            <!-- .contentを.containerの中に入れる -->
+            <div class="content">
+                <div class="left-column">
+                    <div class="section schedule-section">
+                        <div class="section-title">
+                            <span>📖 今日の時間割</span>
+                            <div>
+                                <button class="edit-btn" onclick="openScheduleModal()">編集</button>
+                                <button class="edit-btn" onclick="openAllBulkModal()">一括</button>
+                            </div>
+                        </div>
+                        <div class="schedule-grid" id="scheduleList"></div>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <div class="section items-section">
+                        <div class="section-title">
+                            <span>🎒 持ち物</span>
+                            <button class="edit-btn" onclick="openItemsModal()">編集</button>
+                        </div>
+                        <ul class="items-list" id="itemsList"></ul>
+                    </div>
+
+                    <div class="section event-section">
+                        <div class="section-title">
+                            <span>🗓️ 明日の予定</span>
+                            <button class="edit-btn" onclick="openEventModal()">編集</button>
+                        </div>
+                        <div class="event-box" id="eventBox"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ↑ .container の終了 -->
+
+        <!-- モーダルは.containerの外、.appScreenの中 -->
+        <!-- スケジュール編集モーダル -->
+        <div id="scheduleModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">時間割を編集</div>
+                <div class="modal-body" id="scheduleForm"></div>
+                <div class="btn-group">
+                    <button class="btn btn-save" onclick="saveSchedule()">保存</button>
+                    <button class="btn btn-cancel" onclick="closeModal('scheduleModal')">キャンセル</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 持ち物編集モーダル -->
+        <div id="itemsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">持ち物を編集</div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>持ち物（1行に1つずつ入力）</label>
+                        <textarea id="itemsInput" rows="8"></textarea>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-save" onclick="saveItems()">保存</button>
+                    <button class="btn btn-cancel" onclick="closeModal('itemsModal')">キャンセル</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 明日の予定編集モーダル -->
+        <div id="eventModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">明日の予定を編集</div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>予定</label>
+                        <textarea id="eventInput" rows="5"></textarea>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-save" onclick="saveEvent()">保存</button>
+                    <button class="btn btn-cancel" onclick="closeModal('eventModal')">キャンセル</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 完全一括編集モーダル -->
+        <div id="allBulkModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">一括編集（すべて）</div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>📖 時間割（1行＝1時間目）</label>
+                        <textarea id="bulkScheduleInput" rows="7" placeholder="1限 国語 漢字
+2限 数学 分数"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>🎒 持ち物（1行に1つ）</label>
+                        <textarea id="bulkItemsInput" rows="5" placeholder="教科書
+ノート
+筆記用具"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>🗓️ 明日の予定（改行OK）</label>
+                        <textarea id="bulkEventInput" rows="4" placeholder="数学の小テスト
+部活は早めに集合"></textarea>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-save" onclick="saveAllBulk()">保存</button>
+                    <button class="btn btn-cancel" onclick="closeModal('allBulkModal')">キャンセル</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 時間設定モーダル（メール送信前） -->
+    <div id="emailTimeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">メール送信時間の設定</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 10px;">
+                        <input type="radio" name="emailTimeOption" value="none" checked
+                            onchange="toggleEmailTimeInput()">
+                        時間を表示しない
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 10px;">
+                        <input type="radio" name="emailTimeOption" value="custom" onchange="toggleEmailTimeInput()">
+                        時間を指定する
+                    </label>
+                    <input type="time" id="emailCustomTimeInput" disabled
+                        style="margin-top: 8px; width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 10px;">
+                        <input type="radio" name="emailTimeOption" value="datetime" onchange="toggleEmailTimeInput()">
+                        日にちと時間を指定する
+                    </label>
+                    <div style="margin-top: 8px; display: flex; gap: 10px;">
+                        <input type="date" id="emailCustomDateInput" disabled
+                            style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <input type="time" id="emailCustomDateTimeInput" disabled
+                            style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-save" onclick="confirmAndSendEmail()">メール送信</button>
+                <button class="btn btn-cancel" onclick="closeModal('emailTimeModal')">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZoOx3Y6_550EFyJf6pGLN4Vd0kgBbFHc",
+            authDomain: "schedule-364a4.firebaseapp.com",
+            databaseURL: "https://schedule-364a4-default-rtdb.firebaseio.com",
+            projectId: "schedule-364a4",
+            storageBucket: "schedule-364a4.firebasestorage.app",
+            messagingSenderId: "152068985946",
+            appId: "1:152068985946:web:61415efe8572506e3db463",
+            measurementId: "G-33EQPMQ4Z2"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

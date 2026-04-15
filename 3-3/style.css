@@ -1,0 +1,1015 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-attachment: fixed;
+    height: 100vh;
+    overflow: hidden;
+    padding: 15px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 1400px;
+    height: calc(100vh - 30px);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow:
+        0 8px 32px 0 rgba(31, 38, 135, 0.37),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.5),
+        0 20px 60px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ヘッダー */
+.header {
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0.1) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+    padding: 20px 25px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+}
+
+.header h1 {
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    letter-spacing: -0.5px;
+}
+
+.date-display {
+    font-size: 0.95em;
+    opacity: 0.95;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+/* ユーザー情報エリア */
+.user-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+#userStatus {
+    color: white;
+    font-size: 0.85em;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 6px 14px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.email-btn,
+.logout-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.email-btn:hover,
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.email-btn:active,
+.logout-btn:active {
+    transform: translateY(0);
+}
+
+/* 曜日セレクター */
+.day-selector {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0 0 0;
+    justify-content: center;
+    flex-wrap: nowrap;
+}
+
+.day-btn {
+    padding: 6px 0;
+    min-width: 46px;
+    width: 46px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.day-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.day-btn.active {
+    background: rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow:
+        0 4px 20px rgba(255, 255, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.day-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* コンテンツエリア */
+.content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    padding: 20px;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+@media (max-width: 768px) {
+    .content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.left-column,
+.right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+    min-height: 0;
+    min-width: 0;
+}
+
+.section {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 20px;
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow:
+        0 8px 32px 0 rgba(31, 38, 135, 0.2),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    min-width: 0;
+}
+
+.schedule-section {
+    flex: 1;
+}
+
+.items-section,
+.event-section {
+    flex: 1;
+}
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+.section-title>div {
+    display: flex;
+    gap: 10px;
+}
+
+.edit-btn {
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 18px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 0.75em;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.edit-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.edit-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* スケジュール */
+.schedule-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    column-gap: 15px;
+    overflow: visible;
+    padding-right: 0;
+    flex: 1;
+    min-height: 0;
+}
+
+@media (max-width: 768px) {
+    .schedule-grid {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+}
+
+/* スクロールバーのスタイル（モバイル用） */
+.schedule-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.schedule-grid::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.schedule-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.schedule-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.period-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    border-radius: 15px;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+        0 4px 16px rgba(31, 38, 135, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.period-card:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow:
+        0 8px 24px rgba(31, 38, 135, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.period-number {
+    font-size: 0.8em;
+    color: #667eea;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.subject {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 6px;
+}
+
+.description {
+    color: #4a5568;
+    font-size: 0.85em;
+    line-height: 1.4;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* 持ち物リスト */
+.items-list {
+    list-style: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 5px;
+    flex: 1;
+    min-height: 0;
+}
+
+.items-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.items-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.items-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.items-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.items-list li {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow:
+        0 4px 12px rgba(31, 38, 135, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.items-list li:hover {
+    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.items-list li:before {
+    content: "✓ ";
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 700;
+    margin-right: 10px;
+}
+
+/* イベントボックス */
+.event-box {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow:
+        0 4px 16px rgba(31, 38, 135, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    line-height: 1.6;
+    color: white;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.event-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.event-box::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.event-box::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.event-box::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.event-box strong {
+    display: block;
+    margin-bottom: 10px;
+    color: white;
+    font-size: 1.05em;
+    font-weight: 700;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+/* モーダル */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(30px) saturate(180%);
+    border-radius: 25px;
+    padding: 30px;
+    max-width: 900px;
+    width: 90%;
+    max-height: 85vh;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal-header {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+    min-height: 0;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.4);
+    border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.6);
+}
+
+.btn-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-shrink: 0;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9em;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    font-size: 0.95em;
+    font-family: inherit;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #667eea 50%),
+        linear-gradient(135deg, #667eea 50%, transparent 50%);
+    background-position:
+        calc(100% - 20px) 50%,
+        calc(100% - 14px) 50%;
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    color: #333;
+    font-weight: 500;
+}
+
+.schedule-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    column-gap: 25px;
+}
+
+@media (max-width: 768px) {
+    .schedule-edit-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.btn-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn {
+    padding: 14px 35px;
+    border: none;
+    border-radius: 18px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.btn-cancel {
+    background: rgba(108, 117, 125, 0.9);
+    color: white;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+.btn-cancel:hover {
+    background: rgba(90, 98, 104, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+/* 認証画面 */
+.auth-container {
+    max-width: 440px;
+    width: 90%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border-radius: 30px;
+    padding: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow:
+        0 20px 60px rgba(31, 38, 135, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.auth-container h2 {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+    font-weight: 700;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.auth-container h3 {
+    color: white;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.auth-container input {
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 18px;
+    font-size: 0.95em;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    font-weight: 500;
+}
+
+.auth-container input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.auth-container input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+.auth-container button {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 18px;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.auth-container button:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.auth-container button:active {
+    transform: translateY(0);
+}
+
+.auth-container p {
+    text-align: center;
+    margin-top: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95em;
+}
+
+.auth-container a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.3s;
+}
+
+.auth-container a:hover {
+    border-bottom-color: white;
+}
+
+.anonymous-btn {
+    background: rgba(108, 117, 125, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.anonymous-btn:hover {
+    background: rgba(108, 117, 125, 0.4) !important;
+}
+
+.divider {
+    text-align: center;
+    margin: 20px 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.error-message {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 12px;
+    border-radius: 12px;
+    margin-top: 16px;
+    text-align: center;
+    font-size: 0.9em;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+/* メール確認画面 */
+#emailVerificationForm p {
+    margin-bottom: 16px;
+    line-height: 1.7;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+#emailVerificationForm strong {
+    color: white;
+    font-weight: 700;
+}
+
+.verification-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.verify-btn {
+    background: rgba(40, 167, 69, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.verify-btn:hover {
+    background: rgba(40, 167, 69, 0.5) !important;
+}
+
+.resend-btn {
+    background: rgba(23, 162, 184, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.resend-btn:hover {
+    background: rgba(23, 162, 184, 0.5) !important;
+}
+
+.back-btn {
+    background: rgba(108, 117, 125, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.back-btn:hover {
+    background: rgba(108, 117, 125, 0.5) !important;
+}
+
+.info-message {
+    color: white;
+    background: rgba(23, 162, 184, 0.2);
+    backdrop-filter: blur(10px);
+    margin-top: 16px;
+    text-align: center;
+    font-size: 0.9em;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.success-message {
+    background: rgba(40, 167, 69, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.readonly-notice {
+    background: rgba(255, 193, 7, 0.25);
+    backdrop-filter: blur(10px);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-size: 0.85em;
+    line-height: 1.4;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* スクロールバー */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.5);
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.7);
+}
+
+#allBulkModal .form-group>div {
+    align-items: center;
+}
+
+/* 時間設定モーダルのリキッドデザイン */
+#emailTimeModal .modal-content {
+    width: 90%;
+    max-width: 400px;
+    margin: auto;
+}
+
+#emailTimeModal .modal-body {
+    padding: 20px;
+}
+
+#emailTimeModal .form-group {
+    margin-bottom: 15px;
+}
+
+#emailTimeModal label {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+#emailTimeModal label:hover {
+    background-color: #f5f5f5;
+}
+
+#emailTimeModal input[type="radio"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+#emailCustomTimeInput {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-top: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+#emailCustomTimeInput:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+#emailCustomTimeInput:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+    color: #999;
+}
+
+/* モバイル対応 */
+@media (max-width: 600px) {
+    #emailTimeModal .modal-content {
+        width: 95%;
+        max-width: none;
+    }
+
+    #emailTimeModal .modal-body {
+        padding: 15px;
+    }
+
+    #emailTimeModal label {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    #emailCustomTimeInput {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+/* タブレット対応 */
+@media (min-width: 601px) and (max-width: 1024px) {
+    #emailTimeModal .modal-content {
+        width: 70%;
+        max-width: 500px;
+    }
+}
+
+/* 時間設定モーダルのリキッドデザイン */
+#emailTimeModal .modal-content {
+    width: 90%;
+    max-width: 400px;
+    margin: auto;
+}
+
+#emailTimeModal .modal-body {
+    padding: 20px;
+}
+
+#emailTimeModal .form-group {
+    margin-bottom: 15px;
+}
+
+#emailTimeModal label {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+#emailTimeModal label:hover {
+    background-color: #f5f5f5;
+}
+
+#emailTimeModal input[type="radio"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+
+
+/* モバイル対応 */
+@media (max-width: 600px) {
+    #emailTimeModal .modal-content {
+        width: 95%;
+        max-width: none;
+    }
+
+    #emailTimeModal .modal-body {
+        padding: 15px;
+    }
+
+    #emailTimeModal label {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    #emailCustomTimeInput {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+/* タブレット対応 */
+@media (min-width: 601px) and (max-width: 1024px) {
+    #emailTimeModal .modal-content {
+        width: 70%;
+        max-width: 500px;
+    }
+}
