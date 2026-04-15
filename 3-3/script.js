@@ -708,7 +708,7 @@ function executeEmailSend(timeOption, customTime, customDate, customDateTime) {
     // 明日の予定が有効かチェック
     const validEvent = eventData.trim() !== '';
 
-    const toEmail = 'chall823syouno327@gmail.com';
+    const toEmail = 'challtoboku@icloud.com';
     const subject = encodeURIComponent('3ー3');
 
     let bodyText = `${autoMessage}\n【${month}月${date}日の予定】\n\n`;
