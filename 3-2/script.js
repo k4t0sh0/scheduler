@@ -863,7 +863,7 @@ function executeEmailSend(timeOption, customTime, customDate, customDateTime) {
     const toEmail = 'katokato.s@icloud.com';
     const subject = encodeURIComponent('3-2');
 
-    let bodyText = `${autoMessage}\n【${month}月${date}日の予定】\n\n`;
+    let bodyText = `${autoMessage}\n【${month}月${date + 1}日の予定】\n\n`;
 
     // 時間割セクション（授業がある場合のみ）
     if (validSchedule.length > 0) {
