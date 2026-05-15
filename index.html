@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scheduler app</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Klee+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ログイン画面 -->
+<div id="authScreen">
+  <div class="auth-box">
+    <h2>Scheduler app</h2>
+
+    <div id="loginForm">
+      <input type="email" id="loginEmail" placeholder="メールアドレス">
+      <input type="password" id="loginPassword" placeholder="パスワード">
+      <button onclick="login()">ログイン</button>
+      <p>アカウントをお持ちでない方 <a href="#" onclick="showRegister(); return false;">新規登録</a></p>
+    </div>
+
+    <div id="registerForm" style="display:none">
+      <input type="email" id="registerEmail" placeholder="メールアドレス">
+      <input type="password" id="registerPassword" placeholder="パスワード（6文字以上）">
+      <button onclick="register()">登録</button>
+      <p><a href="#" onclick="showLogin(); return false;">ログインに戻る</a></p>
+    </div>
+
+    <div class="auth-divider">または</div>
+    <button onclick="anonymousLogin()" class="anon-btn">👤 匿名で参加（閲覧のみ）</button>
+    <div id="authError" class="auth-error"></div>
+  </div>
+</div>
+
+<!-- アプリ画面 -->
+<div id="appScreen" style="display:none">
+
+  <!-- ヘッダー -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-title">Scheduler app</div>
+      <div class="app-date" id="dateDisplay"></div>
+    </div>
+    <div class="header-center" id="headerCenter"></div>
+    <div class="header-right">
+      <span id="userEmail" class="user-email"></span>
+      <div class="avatar-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+      </div>
+      <button onclick="logout()" class="logout-small">ログアウト</button>
+    </div>
+  </header>
+
+  <!-- ホーム画面 -->
+  <div id="homeView" class="main-view home-layout">
+    <div class="home-left">
+      <p class="home-prompt">スケジュールを送信する方を選択してください。</p>
+      <div class="mode-select">
+        <button class="btn-mode btn-ai" onclick="startManual()">
+          🔍📊 AI画像解析
+        </button>
+        <button class="btn-mode btn-manual" onclick="startManual()">
+          ⌨️ 自分で入力
+        </button>
+      </div>
+    </div>
+    <div class="home-right">
+      <div class="memo-box" contenteditable="true" id="memoBox"
+           data-placeholder="・メモはここに書く"></div>
+    </div>
+  </div>
+
+  <!-- ウィザード画面 -->
+  <div id="wizardView" class="main-view wizard-layout" style="display:none">
+
+    <!-- ステップインジケーター -->
+    <div class="step-indicator">
+      <div class="step-item" id="si1">
+        <div class="step-circle">①</div>
+        <div class="step-label">時間割</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item" id="si2">
+        <div class="step-circle">②</div>
+        <div class="step-label">持ち物</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item" id="si3">
+        <div class="step-circle">③</div>
+        <div class="step-label">送信先</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item" id="si4">
+        <div class="step-circle">④</div>
+        <div class="step-label">プレビュー</div>
+      </div>
+    </div>
+
+    <!-- ステップコンテンツ -->
+    <div class="step-content">
+
+      <!-- Step 1: 時間割 -->
+      <div id="step1Content" class="step-panel">
+        <div class="schedule-inputs" id="scheduleInputs"></div>
+      </div>
+
+      <!-- Step 2: 持ち物 -->
+      <div id="step2Content" class="step-panel" style="display:none">
+        <div class="step2-layout">
+          <div class="items-column">
+            <ul class="items-edit-list" id="itemsEditList"></ul>
+            <button class="add-item-btn" onclick="addItem()">＋</button>
+          </div>
+          <div class="time-column">
+            <div class="time-row">
+              <span class="time-label">授業数</span>
+              <input type="number" id="classCount" min="1" max="8" value="6" class="num-input"> ×
+              <input type="number" id="classDuration" min="30" max="70" value="50" class="num-input"> 分
+            </div>
+            <div class="time-row">
+              <span class="time-label">下校時間</span>
+              <input type="number" id="dismissalHour" min="12" max="20" value="16" class="num-input"> 時
+              <input type="number" id="dismissalMin" min="0" max="59" value="50" class="num-input"> 分
+            </div>
+            <textarea id="whiteboardText" class="whiteboard-input"
+                      placeholder="テスト範囲とか行事とかを書く"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: 送信先 -->
+      <div id="step3Content" class="step-panel" style="display:none">
+        <div class="step3-layout">
+          <div class="recipients-column">
+            <div id="recipientList" class="recipient-list"></div>
+            <button class="add-recipient-btn" onclick="addCustomRecipient()">ほか独自の ＋</button>
+          </div>
+          <div class="date-column">
+            <div class="date-toggle">
+              <button class="date-btn active" id="tomorrowBtn" onclick="selectDateType('tomorrow')">明日</button>
+              <button class="date-btn" id="customDateBtn" onclick="selectDateType('custom')">休みはさむ</button>
+            </div>
+            <div class="selected-date" id="selectedDateDisplay"></div>
+            <div id="customDateTimeWrap" style="display:none">
+              <input type="date" id="customDate" class="date-input">
+              <input type="time" id="customTime" class="date-input">
+            </div>
+            <button class="confirm-btn" onclick="confirmDateTime()">決定</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: プレビュー -->
+      <div id="step4Content" class="step-panel" style="display:none">
+        <div class="step4-layout">
+          <div class="preview-box" id="previewBox"></div>
+          <div class="preview-actions">
+            <div class="preview-action-item" onclick="goToStep(1)">
+              <span class="pencil">✏️</span> 時間割
+            </div>
+            <div class="preview-action-item" onclick="goToStep(2)">
+              <span class="pencil">✏️</span> 持ち物
+            </div>
+            <div class="preview-action-item" onclick="goToStep(2)">
+              <span class="pencil">✏️</span> 下校時間
+            </div>
+            <div class="preview-action-item" onclick="goToStep(2)">
+              <span class="pencil">✏️</span> ホワイトボード
+            </div>
+            <button class="send-btn" onclick="sendEmail()" title="送信">
+              ➤
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ウィザードナビ -->
+    <div class="wizard-nav">
+      <button class="nav-btn" onclick="prevStep()">↩</button>
+      <button class="nav-btn" onclick="nextStep()">↪</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAZoOx3Y6_550EFyJf6pGLN4Vd0kgBbFHc",
+    authDomain: "schedule-364a4.firebaseapp.com",
+    databaseURL: "https://schedule-364a4-default-rtdb.firebaseio.com",
+    projectId: "schedule-364a4",
+    storageBucket: "schedule-364a4.firebasestorage.app",
+    messagingSenderId: "152068985946",
+    appId: "1:152068985946:web:61415efe8572506e3db463"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
+<script src="script.js"></script>
+</body>
+</html>
