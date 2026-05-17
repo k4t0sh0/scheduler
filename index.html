@@ -125,7 +125,7 @@
             </div>
             <div class="time-row">
               <span class="time-label">下校時間</span>
-              <input type="number" id="dismissalHour" min="12" max="20" value="16" class="num-input"> 時
+              <input type="number" id="dismissalHour" min="1" max="20" value="16" class="num-input"> 時
               <input type="number" id="dismissalMin" min="0" max="59" value="50" class="num-input"> 分
             </div>
             <textarea id="whiteboardText" class="whiteboard-input"
@@ -165,13 +165,10 @@
               <span class="pencil">✏️</span> 時間割
             </div>
             <div class="preview-action-item" onclick="goToStep(2)">
-              <span class="pencil">✏️</span> 持ち物
+              <span class="pencil">✏️</span> 持ち物・下校時間とか
             </div>
-            <div class="preview-action-item" onclick="goToStep(2)">
-              <span class="pencil">✏️</span> 下校時間
-            </div>
-            <div class="preview-action-item" onclick="goToStep(2)">
-              <span class="pencil">✏️</span> ホワイトボード
+            <div class="preview-action-item" onclick="goToStep(3)">
+              <span class="pencil">✏️</span> 送信先
             </div>
             <button class="send-btn" onclick="sendEmail()" title="送信">
               ➤
@@ -183,10 +180,21 @@
 
     <!-- ウィザードナビ -->
     <div class="wizard-nav">
-      <button class="nav-btn" onclick="prevStep()">↩</button>
-      <button class="nav-btn" onclick="nextStep()">↪</button>
+      <button class="nav-btn prev-button" onclick="prevStep()">↩</button>
+      <button class="nav-btn next-button" onclick="nextStep()">↪</button>
     </div>
   </div>
+
+  <!-- 曜日変更 -->
+  <div class="day-wheel-wrapper" id="dayWheelWrapper">
+  <div class="day-wheel" id="dayWheel">
+    <div class="day-wheel-item" data-day="monday">月</div>
+    <div class="day-wheel-item" data-day="tuesday">火</div>
+    <div class="day-wheel-item" data-day="wednesday">水</div>
+    <div class="day-wheel-item" data-day="thursday">木</div>
+    <div class="day-wheel-item" data-day="friday">金</div>
+  </div>
+</div>
 
 </div>
 

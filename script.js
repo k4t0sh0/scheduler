@@ -3,8 +3,12 @@ const auth = firebase.auth();
 let currentUser = null;
 let isAnonymous = false;
 
+let wheelIndex = 0;
+const dayKeys = ['monday','tuesday','wednesday','thursday','friday'];
+
 // ウィザード状態
 let currentStep = 1;
+let currentDay = 'monday';
 let scheduleData = [];
 let itemsData = [];
 let whiteboardText = '';
@@ -23,7 +27,7 @@ const SUBJECT_LIST = [
 ];
 
 // 送信先リスト（Firebaseから読み込み・保存）
-let recipientList = ['katokato.s@icloud.com'];
+let recipientList = ['katokato.s.javas@gmail.com'];
 
 // ========== 初期化 ==========
 function init() {
@@ -51,6 +55,7 @@ function showApp() {
   displayDate();
   updateUserDisplay();
   showHomeView();
+  initDayWheel();
 }
 
 function showLogin() {
@@ -112,7 +117,7 @@ function getErrorMessage(code) {
   return map[code] || 'エラーが発生しました: ' + code;
 }
 
-// ========== 日付・ユーザー表示 ==========
+// ========== 曜日変更・日付・ユーザー表示 ==========
 function displayDate() {
   const today = new Date();
   const y = today.getFullYear();
@@ -128,7 +133,7 @@ function updateUserDisplay() {
     isAnonymous ? '匿名ユーザー' : (currentUser?.email || '');
 }
 
-// ========== データ読み込み ==========
+// ① loadData はメモ・送信先など「共通データ」だけ読む
 function loadData() {
   const ref = database.ref('schoolSchedule/shared');
   ref.once('value', snapshot => {
@@ -136,25 +141,6 @@ function loadData() {
     if (!data) {
       scheduleData = getDefaultSchedule();
       return;
-    }
-
-    // 今日の曜日のデータを読み込む
-    const todayKey = getTodayKey();
-    if (data[todayKey]) {
-      scheduleData = data[todayKey].schedule || getDefaultSchedule();
-      itemsData    = data[todayKey].items   || [];
-      whiteboardText = data[todayKey].event || '';
-    } else {
-      // 全曜日データ（旧形式）がある場合
-      const days = ['monday','tuesday','wednesday','thursday','friday'];
-      const found = days.find(d => data[d]);
-      if (found) {
-        scheduleData = data[found].schedule || getDefaultSchedule();
-        itemsData    = data[found].items   || [];
-        whiteboardText = data[found].event || '';
-      } else {
-        scheduleData = getDefaultSchedule();
-      }
     }
 
     // メモ
@@ -167,8 +153,44 @@ function loadData() {
     if (data.recipients && Array.isArray(data.recipients)) {
       recipientList = data.recipients;
     }
+
+    // 曜日データを読み込む（初回はmonday固定）
+    loadDayData(currentDay, data);
   });
 }
+
+// ② 曜日ごとのデータ読み込みを独立した関数に
+function loadDayData(day, data) {
+  if (data && data[day]) {
+    scheduleData   = data[day].schedule || getDefaultSchedule();
+    itemsData      = data[day].items    || [];
+    whiteboardText = data[day].event    || '';
+  } else {
+    scheduleData   = getDefaultSchedule();
+    itemsData      = [];
+    whiteboardText = '';
+  }
+}
+
+// ③ 曜日切り替え時はFirebaseを再取得して loadDayData を呼ぶ
+function switchDay(day) {
+  currentDay = day;
+
+  database.ref('schoolSchedule/shared').once('value', snapshot => {
+    loadDayData(day, snapshot.val());
+  });
+
+  document.querySelectorAll('.day-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.day === day);
+  });
+}
+
+// ========== 曜日変更 ==========
+// スクロールで回す
+document.getElementById('dayWheel').addEventListener('wheel', (e) => {
+  if (e.deltaY > 0) rotateWheel(1);  // 下スクロール→次の曜日
+  else              rotateWheel(-1); // 上スクロール→前の曜日
+});
 
 function getTodayKey() {
   const keys = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
@@ -182,8 +204,7 @@ function getDefaultSchedule() {
 
 // ========== データ保存 ==========
 function saveToFirebase() {
-  if (isAnonymous || !currentUser) return;
-  const todayKey = getTodayKey();
+  if (isAnonymous || !currentUser) return
   database.ref(`schoolSchedule/shared/${todayKey}`).set({
     schedule: scheduleData,
     items: itemsData,
@@ -296,10 +317,12 @@ function renderStep1() {
   document.getElementById('scheduleInputs').innerHTML = scheduleData.map((p, i) => `
     <div class="schedule-row">
       <div class="period-num">${i + 1}</div>
-      <input type="text" id="subject${i}" class="subject-input"
-        value="${escHtml(p.subject)}"
-        list="subjectList"
-        placeholder="教科">
+
+      <select type="text" id="subject${i}" class="subject-input"
+        ${SUBJECT_LIST.map(s =>
+          `<option value="${s}" ${s === p.subject ? 'selected' : ''}>${s}</option>`
+        ).join('')}
+        )}
       <input type="text" id="desc${i}" class="desc-input"
         value="${escHtml(p.description)}"
         placeholder="内容">
@@ -469,7 +492,7 @@ function sendEmail() {
   const bodyText = document.getElementById('previewBox').textContent;
   const toEmail  = selectedRecipients.join(',');
   const subject  = encodeURIComponent('3-2');
-  const body     = encodeURIComponent(`※これは自動送信です。\n\n${bodyText}`);
+  const body     = encodeURIComponent(`${bodyText}`);
 
   saveToFirebase();
   window.location.href = `mailto:${toEmail}?subject=${subject}&body=${body}`;
@@ -483,6 +506,86 @@ function escHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+function initDayWheel() {
+  updateWheelDisplay();
+
+  const wheel = document.getElementById('dayWheelWrapper');
+
+  // スクロールで回す
+  wheel.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (e.deltaY > 0) rotateWheel(1);
+    else rotateWheel(-1);
+  }, { passive: false });
+
+  // タッチスワイプで回す
+  let touchStartY = 0;
+  wheel.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+  });
+  wheel.addEventListener('touchend', (e) => {
+    const diff = touchStartY - e.changedTouches[0].clientY;
+    if (Math.abs(diff) > 20) rotateWheel(diff > 0 ? 1 : -1);
+  });
+
+  // クリックで上下移動
+  wheel.addEventListener('click', (e) => {
+    const rect = wheel.getBoundingClientRect();
+    const center = rect.top + rect.height / 2;
+    rotateWheel(e.clientY > center ? 1 : -1);
+  });
+}
+
+function rotateWheel(direction) {
+  wheelIndex = (wheelIndex + direction + 5) % 5;
+  currentDay = dayKeys[wheelIndex];
+  updateWheelDisplay();
+
+  // データ再読み込み
+  database.ref('schoolSchedule/shared').once('value', snapshot => {
+    loadDayData(currentDay, snapshot.val());
+
+    const wizardVisible = document.getElementById('wizardView').style.display !== 'none';
+    if ( wizardVisible) {
+      renderCurrentStep();
+    }
+  });
+}
+
+function updateWheelDisplay() {
+  const items = document.querySelectorAll('.day-wheel-item');
+  items.forEach((item, i) => {
+    const dist = i - wheelIndex;
+    item.setAttribute('data-dist', dist);
+  });
+}
+
+// ========== Arrow-button ==========
+window.addEventListener("keydown", function(event) {
+  // ウィザード画面が表示されていない時は処理しない
+  const wizardView = document.getElementById('wizardView');
+  if (!wizardView || wizardView.style.display === 'none') return;
+
+  // 現在、文字入力中の場合は、矢印キーの本来の挙動（カーソル移動など）を優先するため処理しない
+  const activeEl = document.activeElement;
+  if (activeEl && (
+    activeEl.tagName === 'INPUT' || 
+    activeEl.tagName === 'TEXTAREA' || 
+    activeEl.getAttribute('contenteditable') === 'true'
+  )) {
+    return;
+  }
+
+  // 左右の矢印キーを検知して関数を実行
+  if (event.key === "ArrowLeft") {
+    event.preventDefault(); // 画面の横スクロールなどを防止
+    prevStep();
+  } else if (event.key === "ArrowRight") {
+    event.preventDefault();
+    nextStep();
+  }
+});
 
 // ========== 起動 ==========
 init();

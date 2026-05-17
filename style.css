@@ -207,6 +207,95 @@ body {
 .header-mode-btn.ai     { background: var(--green); }
 .header-mode-btn.manual { background: var(--blue); }
 
+.day-wheel-wrapper {
+  position: fixed;
+  bottom: 40px;
+  left: 36px;
+  height: 200px;
+  width: 52px;
+  overflow: hidden;
+  perspective: 180px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 上下をぼかすグラデーション */
+.day-wheel-wrapper::before,
+.day-wheel-wrapper::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 60px;
+  z-index: 2;
+  pointer-events: none;
+}
+.day-wheel-wrapper::before {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0));
+}
+.day-wheel-wrapper::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
+}
+
+.day-wheel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.day-wheel-item {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: 'Klee One', cursive;
+  font-size: 0.9em;
+  color: #bbb;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  transform-origin: center;
+  user-select: none;
+}
+
+.day-wheel-item[data-dist="0"] {
+  color: #333;
+  font-size: 1.1em;
+  background: var(--green);
+  box-shadow: 0 2px 8px rgba(140,200,100,0.4);
+  transform: rotateX(0deg) scale(1);
+  opacity: 1;
+}
+
+.day-wheel-item[data-dist="1"] {
+  transform: rotateX(28deg);
+  opacity: 0.55;
+  font-size: 0.88em;
+}
+
+.day-wheel-item[data-dist="-1"] {
+  transform: rotateX(-28deg);
+  opacity: 0.55;
+  font-size: 0.88em;
+}
+
+.day-wheel-item[data-dist="2"] {
+  transform: rotateX(50deg);
+  opacity: 0.25;
+  font-size: 0.78em;
+}
+
+.day-wheel-item[data-dist="-2"] {
+  transform: rotateX(-50deg);
+  opacity: 0.25;
+  font-size: 0.78em;
+}
 /* ========== MAIN VIEW ========== */
 .main-view {
   flex: 1;
@@ -394,6 +483,7 @@ body {
 }
 
 .subject-input,
+.subject-select,
 .desc-input {
   padding: 9px 14px;
   border: 1px solid var(--border);
@@ -406,6 +496,8 @@ body {
 }
 
 .subject-input { width: 100px; }
+.subject-select:focus,
+.subject-select { width: 100px; appearance: none; -webkit-appearance: none; cursor: pointer; }
 .desc-input    { flex: 1; }
 
 .subject-input:focus,
@@ -542,6 +634,11 @@ body {
 .recipients-column {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+.recipient-list {
+  display: flex;
   gap: 10px;
 }
 
@@ -754,3 +851,4 @@ body {
 
   .step-indicator { padding: 0 10px; }
 }
+
