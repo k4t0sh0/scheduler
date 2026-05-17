@@ -493,6 +493,7 @@ body {
   outline: none;
   transition: border-color 0.2s;
   background: #fff;
+  appearance: none;
 }
 
 .subject-input { width: 100px; }

@@ -205,7 +205,7 @@ function getDefaultSchedule() {
 // ========== データ保存 ==========
 function saveToFirebase() {
   if (isAnonymous || !currentUser) return
-  database.ref(`schoolSchedule/shared/${todayKey}`).set({
+  database.ref(`schoolSchedule/shared/${currentDay}`).set({
     schedule: scheduleData,
     items: itemsData,
     event: whiteboardText
@@ -453,6 +453,10 @@ function renderStep4() {
     }).join('\n');
     text += '\n\n';
   }
+
+  const cc = String(classCount).padStart(1,'0');
+  const cm = String(classDuration).padStart(2, '0');
+  text += `授業数：${cm}分×${cc}\n`;
 
   const hh = String(dismissalHour).padStart(2,'0');
   const mm = String(dismissalMin).padStart(2,'0');
