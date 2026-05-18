@@ -409,7 +409,8 @@ function selectDateType(type) {
 function confirmDateTime() {
   if (scheduleDate === 'custom') {
     customDateValue = document.getElementById('customDate').value;
-    customTimeValue = document.getElementById('customTime').value;
+    const timeEl = document.getElementById('customTime');
+    customTimeValue = timeEl ? timeEl.value : '';
   }
   updateSelectedDateDisplay();
 }
@@ -423,8 +424,8 @@ function updateSelectedDateDisplay() {
     el.textContent = `${t.getFullYear()}/${t.getMonth()+1}/${t.getDate()}`;
   } else if (customDateValue) {
     const parts = customDateValue.split('-');
-    const timeStr = customTimeValue || '12:00';
-    el.textContent = `${parts[0]}/${parseInt(parts[1])}/${parseInt(parts[2])} ${timeStr}`;
+    const timeStr = customTimeValue ? ` ${customTimeValue}` : '';
+    el.textContent = `${parts[0]}/${parseInt(parts[1])}/${parseInt(parts[2])}${timeStr}`;
   } else {
     el.textContent = '日時を指定してください';
   }
@@ -478,8 +479,12 @@ function renderStep4() {
 
 function getTargetDate() {
   if (scheduleDate === 'custom' && customDateValue) {
+    if (customTimeValue) {
+      return new Date(`${customDateValue}T${customTimeValue}`);
+    }
     return new Date(customDateValue);
   }
+
   const t = new Date();
   t.setDate(t.getDate() + 1);
   return t;
