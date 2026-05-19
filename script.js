@@ -20,6 +20,7 @@ let selectedRecipients = [];
 let scheduleDate = 'tomorrow';
 let customDateValue = '';
 let customTimeValue = '';
+let nextTestData = '';
 
 const SUBJECT_LIST = [
   '国語', '数学', '英語', '理科', '社会', '体育',
@@ -154,6 +155,11 @@ function loadData() {
       recipientList = data.recipients;
     }
 
+    //次のテスト
+    if (data.NextTest) {
+      nextTestData = data.NextTest;
+    }
+
     // 曜日データを読み込む（初回はmonday固定）
     loadDayData(currentDay, data);
   });
@@ -187,11 +193,6 @@ function switchDay(day) {
 
 // ========== 曜日変更 ==========
 // スクロールで回す
-document.getElementById('dayWheel').addEventListener('wheel', (e) => {
-  if (e.deltaY > 0) rotateWheel(1);  // 下スクロール→次の曜日
-  else              rotateWheel(-1); // 上スクロール→前の曜日
-});
-
 function getTodayKey() {
   const keys = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
   return keys[new Date().getDay()];
@@ -211,6 +212,7 @@ function saveToFirebase() {
     event: whiteboardText
   });
   database.ref('schoolSchedule/shared/recipients').set(recipientList);
+  database.ref('schoolSchedule/shared/NextTest').set(nextTestData);
   saveMemo();
 }
 
@@ -221,6 +223,7 @@ function saveMemo() {
     database.ref('schoolSchedule/shared/memo').set(el.innerHTML);
   }
 }
+
 
 // ========== 画面切り替え ==========
 function showHomeView() {
@@ -256,6 +259,7 @@ function prevStep() {
 function nextStep() {
   if (currentStep >= 4) return;
   saveCurrentStepData();
+  saveToFirebase();
   currentStep++;
   updateStepIndicator();
   renderCurrentStep();
@@ -283,6 +287,7 @@ function saveCurrentStepData() {
     dismissalHour = parseInt(document.getElementById('dismissalHour')?.value) || 16;
     dismissalMin  = parseInt(document.getElementById('dismissalMin')?.value) || 50;
     whiteboardText = document.getElementById('whiteboardText')?.value || '';
+    nextTestData = document.getElementById('nextTestInput')?.value || '';
   }
 }
 
@@ -315,23 +320,18 @@ function renderStep1() {
   }
 
   document.getElementById('scheduleInputs').innerHTML = scheduleData.map((p, i) => `
-    <div class="schedule-row">
-      <div class="period-num">${i + 1}</div>
-
-      <select type="text" id="subject${i}" class="subject-input"
-        ${SUBJECT_LIST.map(s =>
-          `<option value="${s}" ${s === p.subject ? 'selected' : ''}>${s}</option>`
-        ).join('')}
-        )}
-      <input type="text" id="desc${i}" class="desc-input"
-        value="${escHtml(p.description)}"
-        placeholder="内容">
-    </div>
-  `).join('') + `
-    <datalist id="subjectList">
-      ${SUBJECT_LIST.map(s => `<option value="${s}">`).join('')}
-    </datalist>
-  `;
+  <div class="schedule-row">
+    <div class="period-num">${i + 1}</div>
+    <select id="subject${i}" class="subject-select">
+      ${SUBJECT_LIST.map(s =>
+        `<option value="${s}" ${s === p.subject ? 'selected' : ''}>${s}</option>`
+      ).join('')}
+    </select>
+    <input type="text" id="desc${i}" class="desc-input"
+      value="${escHtml(p.description)}"
+      placeholder="内容">
+  </div>
+`).join('');
 }
 
 // ========== Step 2: 持ち物 ==========
@@ -349,6 +349,7 @@ function renderStep2() {
   document.getElementById('dismissalHour').value = dismissalHour;
   document.getElementById('dismissalMin').value  = dismissalMin;
   document.getElementById('whiteboardText').value = whiteboardText;
+  document.getElementById('nextTestInput').value = nextTestData;
 }
 
 function addItem() {
@@ -471,7 +472,11 @@ function renderStep4() {
   }
 
   if (whiteboardText.trim()) {
-    text += `【ホワイトボード】\n${whiteboardText}`;
+    text += `【ホワイトボード】\n${whiteboardText}\n\n`;
+  }
+
+  if (nextTestData.trim()) {
+    text += `【次のテスト】\n${nextTestData}`;
   }
 
   document.getElementById('previewBox').textContent = text;
