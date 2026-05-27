@@ -905,6 +905,14 @@ body {
 .manage-input.date  { width: 140px; flex: none; }
 .manage-input.url   { width: 100%; margin-top: 4px; }
 
+.select-test {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding-right: 8px;
+}
+
 @media (max-width: 768px) {
   .manage-layout { grid-template-columns: 1fr; gap: 28px; }
 }

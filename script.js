@@ -611,24 +611,30 @@ function renderManageView() {
     </li>
   `).join('');
 
-  document.getElementById('testList').innerHTML = testsData.map((t, i) => `
+document.getElementById('testList').innerHTML = testsData.map((t, i) => `
   <li style="border:1px solid #eee; border-radius:12px; padding:10px 12px; display:flex; flex-direction:column; gap:8px;">
-    
+
     <!-- 1段目：テスト名 + 削除ボタン -->
     <div style="display:flex; align-items:center; gap:8px;">
-      <input class="manage-input" placeholder="テスト名（例：中間テスト）"
-        value="${escHtml(t.testName || '')}"
-        oninput="testsData[${i}].testName=this.value; saveToFirebase()"
-        style="flex:1">
+      <select class="manage-input select-test" style="flex:1;"
+        oninput="testsData[${i}].testName=this.value; saveToFirebase()">
+        <option value="">テスト名を選択</option>
+        ${['前期中間テスト','前期期末テスト','後期中間テスト','学年末テスト','単元テスト','実力テスト'].map(n =>
+          `<option value="${n}" ${t.testName === n ? 'selected' : ''}>${n}</option>`
+        ).join('')}
+      </select>
       <button class="item-delete-btn" onclick="removeTest(${i})">×</button>
     </div>
 
     <!-- 2段目：科目 + 内容 + 日付 -->
     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-      <input class="manage-input" placeholder="科目（任意）"
-        value="${escHtml(t.subject || '')}"
-        oninput="testsData[${i}].subject=this.value; saveToFirebase()"
-        style="width:80px; flex:none;">
+      <select class="manage-input select-test" style="width:90px; flex:none;"
+        oninput="testsData[${i}].subject=this.value; saveToFirebase()">
+        <option value="">科目（任意）</option>
+        ${['英語','数学','国語','理科','社会','技術','家庭科','音楽','美術','保体'].map(s =>
+          `<option value="${s}" ${t.subject === s ? 'selected' : ''}>${s}</option>`
+        ).join('')}
+      </select>
       <input class="manage-input" placeholder="内容（任意）"
         value="${escHtml(t.content || '')}"
         oninput="testsData[${i}].content=this.value; saveToFirebase()"
@@ -646,7 +652,7 @@ function renderManageView() {
 
   </li>
 `).join('');
-}
+      }
 
 function addLetter() {
   lettersData.push({ name: '', date: '' });
