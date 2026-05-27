@@ -622,20 +622,6 @@ body {
   width: 100%;
 }
 
-.nextTest-input {
-  border: 2px dashed var(--border-dashed);
-  border-radius: 16px;
-  padding: 14px;
-  font-family: inherit;
-  font-size: 0.88em;
-  resize: none;
-  outline: none;
-  min-height: 150px;
-  color: #555;
-  line-height: 1.7;
-  width: 100%;
-}
-
 /* ---- Step 3: 送信先 ---- */
 .step3-layout {
   display: grid;
@@ -867,3 +853,58 @@ body {
   .step-indicator { padding: 0 10px; }
 }
 
+/* ========== 管理画面 ========== */
+.manage-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.manage-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.manage-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1em;
+  color: #555;
+}
+
+.manage-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.manage-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.manage-input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 0.85em;
+  outline: none;
+  flex: 1;
+  min-width: 80px;
+}
+
+.manage-input:focus { border-color: #99aacc; }
+.manage-input.date  { width: 140px; flex: none; }
+.manage-input.url   { width: 100%; margin-top: 4px; }
+
+@media (max-width: 768px) {
+  .manage-layout { grid-template-columns: 1fr; gap: 28px; }
+}

@@ -20,7 +20,8 @@ let selectedRecipients = [];
 let scheduleDate = 'tomorrow';
 let customDateValue = '';
 let customTimeValue = '';
-let nextTestData = '';
+let lettersData = [];
+let testsData   = [];
 
 const SUBJECT_LIST = [
   '国語', '数学', '英語', '理科', '社会', '体育',
@@ -155,13 +156,12 @@ function loadData() {
       recipientList = data.recipients;
     }
 
-    //次のテスト
-    if (data.NextTest) {
-      nextTestData = data.NextTest;
-    }
-
     // 曜日データを読み込む（初回はmonday固定）
     loadDayData(currentDay, data);
+
+    if (data.letters) lettersData = Object.values(data.letters);
+
+    if (data.tests)   testsData   = Object.values(data.tests);
   });
 }
 
@@ -212,7 +212,8 @@ function saveToFirebase() {
     event: whiteboardText
   });
   database.ref('schoolSchedule/shared/recipients').set(recipientList);
-  database.ref('schoolSchedule/shared/NextTest').set(nextTestData);
+  database.ref('schoolSchedule/shared/letters').set(lettersData);
+  database.ref('schoolSchedule/shared/tests').set(testsData);
   saveMemo();
 }
 
@@ -257,7 +258,7 @@ function prevStep() {
 }
 
 function nextStep() {
-  if (currentStep >= 4) return;
+  if (currentStep >= 5) return;
   saveCurrentStepData();
   saveToFirebase();
   currentStep++;
@@ -287,12 +288,11 @@ function saveCurrentStepData() {
     dismissalHour = parseInt(document.getElementById('dismissalHour')?.value) || 16;
     dismissalMin  = parseInt(document.getElementById('dismissalMin')?.value) || 50;
     whiteboardText = document.getElementById('whiteboardText')?.value || '';
-    nextTestData = document.getElementById('nextTestInput')?.value || '';
   }
 }
 
 function updateStepIndicator() {
-  for (let i = 1; i <= 4; i++) {
+  for (let i = 1; i <= 5; i++) {
     const el = document.getElementById(`si${i}`);
     el.className = 'step-item';
     if (i < currentStep) el.classList.add('completed');
@@ -301,14 +301,15 @@ function updateStepIndicator() {
 }
 
 function renderCurrentStep() {
-  for (let i = 1; i <= 4; i++) {
+  for (let i = 1; i <= 5; i++) {
     const el = document.getElementById(`step${i}Content`);
     if (el) el.style.display = i === currentStep ? 'block' : 'none';
   }
   if (currentStep === 1) renderStep1();
   else if (currentStep === 2) renderStep2();
   else if (currentStep === 3) renderStep3();
-  else if (currentStep === 4) renderStep4();
+  else if (currentStep === 4) renderManageView();
+  else if (currentStep === 5) renderStep4();
 }
 
 // ========== Step 1: 時間割 ==========
@@ -349,7 +350,6 @@ function renderStep2() {
   document.getElementById('dismissalHour').value = dismissalHour;
   document.getElementById('dismissalMin').value  = dismissalMin;
   document.getElementById('whiteboardText').value = whiteboardText;
-  document.getElementById('nextTestInput').value = nextTestData;
 }
 
 function addItem() {
@@ -475,10 +475,6 @@ function renderStep4() {
     text += `【ホワイトボード】\n${whiteboardText}\n\n`;
   }
 
-  if (nextTestData.trim()) {
-    text += `【次のテスト】\n${nextTestData}`;
-  }
-
   document.getElementById('previewBox').textContent = text;
 }
 
@@ -600,6 +596,81 @@ window.addEventListener("keydown", function(event) {
     nextStep();
   }
 });
+
+// ========== 管理画面 ==========
+function renderManageView() {
+  document.getElementById('letterList').innerHTML = lettersData.map((l, i) => `
+    <li class="manage-row">
+      <input class="manage-input" placeholder="名前（例：手紙1）"
+        value="${escHtml(l.name || '')}"
+        oninput="lettersData[${i}].name=this.value; saveToFirebase()">
+      <input class="manage-input date" type="date"
+        value="${l.date || ''}"
+        oninput="lettersData[${i}].date=this.value; saveToFirebase()">
+      <button class="item-delete-btn" onclick="removeLetter(${i})">×</button>
+    </li>
+  `).join('');
+
+  document.getElementById('testList').innerHTML = testsData.map((t, i) => `
+  <li style="border:1px solid #eee; border-radius:12px; padding:10px 12px; display:flex; flex-direction:column; gap:8px;">
+    
+    <!-- 1段目：テスト名 + 削除ボタン -->
+    <div style="display:flex; align-items:center; gap:8px;">
+      <input class="manage-input" placeholder="テスト名（例：中間テスト）"
+        value="${escHtml(t.testName || '')}"
+        oninput="testsData[${i}].testName=this.value; saveToFirebase()"
+        style="flex:1">
+      <button class="item-delete-btn" onclick="removeTest(${i})">×</button>
+    </div>
+
+    <!-- 2段目：科目 + 内容 + 日付 -->
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <input class="manage-input" placeholder="科目（任意）"
+        value="${escHtml(t.subject || '')}"
+        oninput="testsData[${i}].subject=this.value; saveToFirebase()"
+        style="width:80px; flex:none;">
+      <input class="manage-input" placeholder="内容（任意）"
+        value="${escHtml(t.content || '')}"
+        oninput="testsData[${i}].content=this.value; saveToFirebase()"
+        style="flex:1; min-width:100px;">
+      <input class="manage-input date" type="date"
+        value="${t.date || ''}"
+        oninput="testsData[${i}].date=this.value; saveToFirebase()">
+    </div>
+
+    <!-- 3段目：範囲表URL -->
+    <input class="manage-input" placeholder="範囲表URL（省略可）"
+      value="${escHtml(t.driveUrl || '')}"
+      oninput="testsData[${i}].driveUrl=this.value; saveToFirebase()"
+      style="width:100%;">
+
+  </li>
+`).join('');
+}
+
+function addLetter() {
+  lettersData.push({ name: '', date: '' });
+  saveToFirebase();
+  renderManageView();
+}
+
+function removeLetter(i) {
+  lettersData.splice(i, 1);
+  saveToFirebase();
+  renderManageView();
+}
+
+function addTest() {
+  testsData.push({ subject: '', content: '', date: '', driveUrl: '' });
+  saveToFirebase();
+  renderManageView();
+}
+
+function removeTest(i) {
+  testsData.splice(i, 1);
+  saveToFirebase();
+  renderManageView();
+}
 
 // ========== 起動 ==========
 init();

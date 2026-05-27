@@ -98,8 +98,13 @@
       <div class="step-line"></div>
       <div class="step-item" id="si4">
         <div class="step-circle">④</div>
-        <div class="step-label">プレビュー</div>
+        <div class="step-label">手紙・テスト</div>
       </div>
+      <div class="step-line"></div>
+      <div class="step-item" id="si5">
+        <div class="step-circle">⑤</div>
+        <div class="step-label">プレビュー</div>
+        </div>
     </div>
 
     <!-- ステップコンテンツ -->
@@ -130,8 +135,6 @@
             </div>
             <textarea id="whiteboardText" class="whiteboard-input"
                       placeholder="テスト範囲とか行事とかを書く"></textarea>
-            <textarea id="nextTestInput" class="nextTest-input"
-                      placeholder="次のテスト"></textarea>
           </div>
         </div>
       </div>
@@ -157,26 +160,47 @@
         </div>
       </div>
 
-      <!-- Step 4: プレビュー -->
-      <div id="step4Content" class="step-panel" style="display:none">
-        <div class="step4-layout">
-          <div class="preview-box" id="previewBox"></div>
-          <div class="preview-actions">
-            <div class="preview-action-item" onclick="goToStep(1)">
-              <span class="pencil">✏️</span> 時間割
-            </div>
-            <div class="preview-action-item" onclick="goToStep(2)">
-              <span class="pencil">✏️</span> 持ち物・下校時間とか
-            </div>
-            <div class="preview-action-item" onclick="goToStep(3)">
-              <span class="pencil">✏️</span> 送信先
-            </div>
-            <button class="send-btn" onclick="sendEmail()" title="送信">
-              ➤
-            </button>
-          </div>
-        </div>
+      <!-- Step 4: 手紙・テスト管理 -->
+<div id="step4Content" class="step-panel" style="display:none">
+  <div class="manage-layout">
+    <div class="manage-section">
+      <div class="manage-section-header">
+        <span>📩 手紙・提出物</span>
+        <button class="add-item-btn" onclick="addLetter()">＋</button>
       </div>
+      <ul class="manage-list" id="letterList"></ul>
+    </div>
+    <div class="manage-section">
+      <div class="manage-section-header">
+        <span>📝 テスト</span>
+        <button class="add-item-btn" onclick="addTest()">＋</button>
+      </div>
+      <ul class="manage-list" id="testList"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Step 5: プレビュー -->
+<div id="step5Content" class="step-panel" style="display:none">
+  <div class="step4-layout">
+    <div class="preview-box" id="previewBox"></div>
+    <div class="preview-actions">
+      <div class="preview-action-item" onclick="goToStep(1)">
+        <span class="pencil">✏️</span> 時間割
+      </div>
+      <div class="preview-action-item" onclick="goToStep(2)">
+        <span class="pencil">✏️</span> 持ち物・下校時間とか
+      </div>
+      <div class="preview-action-item" onclick="goToStep(3)">
+        <span class="pencil">✏️</span> 送信先
+      </div>
+      <div class="preview-action-item" onclick="goToStep(4)">
+        <span class="pencil">✏️</span> 手紙・テスト
+      </div>
+      <button class="send-btn" onclick="sendEmail()" title="送信">➤</button>
+    </div>
+  </div>
+</div>
     </div>
 
     <!-- ウィザードナビ -->
@@ -185,6 +209,8 @@
       <button class="nav-btn next-button" onclick="nextStep()">↪</button>
     </div>
   </div>
+
+  
 
   <!-- 曜日変更 -->
   <div class="day-wheel-wrapper" id="dayWheelWrapper">
