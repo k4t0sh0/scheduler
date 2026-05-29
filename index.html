@@ -148,8 +148,9 @@
           </div>
           <div class="date-column">
             <div class="date-toggle">
-              <button class="date-btn active" id="tomorrowBtn" onclick="selectDateType('tomorrow')">明日</button>
-              <button class="date-btn" id="customDateBtn" onclick="selectDateType('custom')">休みはさむ</button>
+              <button class="date-btn active" id="tomorrowBtn"   onclick="selectDateType('tomorrow')">明日</button>
+              <button class="date-btn"        id="nextMondayBtn" onclick="selectDateType('nextMonday')">次の月曜日</button>
+              <button class="date-btn"        id="customDateBtn" onclick="selectDateType('custom')">特別な日</button>
             </div>
             <div class="selected-date" id="selectedDateDisplay"></div>
             <div id="customDateTimeWrap" style="display:none">

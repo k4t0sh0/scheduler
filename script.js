@@ -402,9 +402,10 @@ function selectDateType(type) {
   scheduleDate = type;
   const wrap = document.getElementById('customDateTimeWrap');
   wrap.style.display = type === 'custom' ? 'block' : 'none';
-  document.getElementById('tomorrowBtn').classList.toggle('active', type === 'tomorrow');
+  document.getElementById('tomorrowBtn').classList.toggle('active',   type === 'tomorrow');
+  document.getElementById('nextMondayBtn').classList.toggle('active', type === 'nextMonday');
   document.getElementById('customDateBtn').classList.toggle('active', type === 'custom');
-  if (type === 'tomorrow') updateSelectedDateDisplay();
+  updateSelectedDateDisplay();
 }
 
 function confirmDateTime() {
@@ -414,22 +415,57 @@ function confirmDateTime() {
     customTimeValue = timeEl ? timeEl.value : '';
   }
   updateSelectedDateDisplay();
+
+  // Firebaseに送信予定日を保存
+  const target = getTargetDate();
+  const yyyy = target.getFullYear();
+  const mm   = String(target.getMonth() + 1).padStart(2, '0');
+  const dd   = String(target.getDate()).padStart(2, '0');
+  database.ref('schoolSchedule/shared/scheduledDate').set(`${yyyy}-${mm}-${dd}`);
+
+  // 曜日ホイールを対象日に自動で合わせる
+  const dayKeys2    = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const targetDayKey = dayKeys2[target.getDay()];
+  const wheelIdx    = ['monday','tuesday','wednesday','thursday','friday'].indexOf(targetDayKey);
+  if (wheelIdx >= 0) {
+    wheelIndex = wheelIdx;
+    currentDay = targetDayKey;
+    updateWheelDisplay();
+    database.ref('schoolSchedule/shared').once('value', snapshot => {
+      loadDayData(currentDay, snapshot.val());
+    });
+  }
 }
 
 function updateSelectedDateDisplay() {
   const el = document.getElementById('selectedDateDisplay');
   if (!el) return;
+
   if (scheduleDate === 'tomorrow') {
     const t = new Date();
     t.setDate(t.getDate() + 1);
-    el.textContent = `${t.getFullYear()}/${t.getMonth()+1}/${t.getDate()}`;
-  } else if (customDateValue) {
+    el.textContent = t.getFullYear() + '/' + (t.getMonth()+1) + '/' + t.getDate();
+
+  } else if (scheduleDate === 'nextMonday') {
+    const nm = getNextMonday();
+    el.textContent = nm.getFullYear() + '/' + (nm.getMonth()+1) + '/' + nm.getDate() + '（月）';
+
+  } else if (scheduleDate === 'custom' && customDateValue) {
     const parts = customDateValue.split('-');
-    const timeStr = customTimeValue ? ` ${customTimeValue}` : '';
-    el.textContent = `${parts[0]}/${parseInt(parts[1])}/${parseInt(parts[2])}${timeStr}`;
+    el.textContent = parts[0] + '/' + parseInt(parts[1]) + '/' + parseInt(parts[2]);
+
   } else {
     el.textContent = '日時を指定してください';
   }
+}
+
+function getNextMonday() {
+  const d = new Date();
+  const day = d.getDay(); // 0=日 1=月 ... 6=土
+  const diff = (8 - day) % 7 || 7; // 次の月曜まで何日か
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
 // ========== Step 4: プレビュー ==========
@@ -479,6 +515,9 @@ function renderStep4() {
 }
 
 function getTargetDate() {
+  if (scheduleDate === 'nextMonday') {  // ← 追加
+    return getNextMonday();             // ← 追加
+  }
   if (scheduleDate === 'custom' && customDateValue) {
     if (customTimeValue) {
       return new Date(`${customDateValue}T${customTimeValue}`);
