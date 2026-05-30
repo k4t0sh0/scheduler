@@ -171,19 +171,33 @@ function loadDayData(day, data) {
     scheduleData   = data[day].schedule || getDefaultSchedule();
     itemsData      = data[day].items    || [];
     whiteboardText = data[day].event    || '';
+    classDuration  = data[day].classDuration || 50;
+    classCount = data[day].classCount || 6;
+    dismissalHour  = data[day].dismissalHour || 16;   
+    dismissalMin   = data[day].dismissalMin  || 50;   
   } else {
     scheduleData   = getDefaultSchedule();
     itemsData      = [];
     whiteboardText = '';
+    classDuration  = 50;
+    classCount = 6;
+    dismissalHour  = 16;
+    dismissalMin   = 50;
   }
 }
 
 // ③ 曜日切り替え時はFirebaseを再取得して loadDayData を呼ぶ
 function switchDay(day) {
+  saveCurrentStepData(); // 現在の入力内容を先に保存
+  saveToFirebase();
   currentDay = day;
 
   database.ref('schoolSchedule/shared').once('value', snapshot => {
     loadDayData(day, snapshot.val());
+
+    // Step2表示中なら入力欄を再描画
+    if (currentStep === 2) renderStep2();
+    if (currentStep === 1) renderStep1();
   });
 
   document.querySelectorAll('.day-btn').forEach(btn => {
@@ -209,7 +223,11 @@ function saveToFirebase() {
   database.ref(`schoolSchedule/shared/${currentDay}`).set({
     schedule: scheduleData,
     items: itemsData,
-    event: whiteboardText
+    event: whiteboardText,
+    classDuration: classDuration,
+    classCount: classCount,
+    dismissalHour: dismissalHour,
+    dismissalMin:  dismissalMin
   });
   database.ref('schoolSchedule/shared/recipients').set(recipientList);
   database.ref('schoolSchedule/shared/letters').set(lettersData);
@@ -515,8 +533,8 @@ function renderStep4() {
 }
 
 function getTargetDate() {
-  if (scheduleDate === 'nextMonday') {  // ← 追加
-    return getNextMonday();             // ← 追加
+  if (scheduleDate === 'nextMonday') {  
+    return getNextMonday();             
   }
   if (scheduleDate === 'custom' && customDateValue) {
     if (customTimeValue) {
