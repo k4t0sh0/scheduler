@@ -133,6 +133,16 @@
               <input type="number" id="dismissalHour" min="1" max="20" value="16" class="num-input"> 時
               <input type="number" id="dismissalMin" min="0" max="59" value="50" class="num-input"> 分
             </div>
+            <div class="time-row">
+              <span class="time-label">委員会</span>
+                 <button id="committeeBtn"
+                  onclick="toggleCommittee()"
+                  style="padding:6px 18px; border-radius:20px; border:1px solid #ddd;
+                          font-family:inherit; font-size:0.88em; cursor:pointer;
+                          background:#eee; color:#888;">
+                    なし
+                </button>
+              </div>
             <textarea id="whiteboardText" class="whiteboard-input"
                       placeholder="テスト範囲とか行事とかを書く"></textarea>
           </div>

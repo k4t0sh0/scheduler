@@ -22,6 +22,7 @@ let customDateValue = '';
 let customTimeValue = '';
 let lettersData = [];
 let testsData   = [];
+let hasCommittee = false;
 
 const SUBJECT_LIST = [
   '国語', '数学', '英語', '理科', '社会', '体育',
@@ -155,7 +156,6 @@ function loadData() {
     if (data.recipients && Array.isArray(data.recipients)) {
       recipientList = data.recipients;
     }
-
     // 曜日データを読み込む（初回はmonday固定）
     loadDayData(currentDay, data);
 
@@ -175,6 +175,7 @@ function loadDayData(day, data) {
     classCount = data[day].classCount || 6;
     dismissalHour  = data[day].dismissalHour || 16;   
     dismissalMin   = data[day].dismissalMin  || 50;   
+    hasCommittee = data[day].hasCommittee || false;
   } else {
     scheduleData   = getDefaultSchedule();
     itemsData      = [];
@@ -183,6 +184,7 @@ function loadDayData(day, data) {
     classCount = 6;
     dismissalHour  = 16;
     dismissalMin   = 50;
+    hasCommittee = false;
   }
 }
 
@@ -227,7 +229,8 @@ function saveToFirebase() {
     classDuration: classDuration,
     classCount: classCount,
     dismissalHour: dismissalHour,
-    dismissalMin:  dismissalMin
+    dismissalMin:  dismissalMin,
+    hasCommittee: hasCommittee,
   });
   database.ref('schoolSchedule/shared/recipients').set(recipientList);
   database.ref('schoolSchedule/shared/letters').set(lettersData);
@@ -368,6 +371,24 @@ function renderStep2() {
   document.getElementById('dismissalHour').value = dismissalHour;
   document.getElementById('dismissalMin').value  = dismissalMin;
   document.getElementById('whiteboardText').value = whiteboardText;
+
+  const btn = document.getElementById('committeeBtn');
+if (btn) {
+  btn.textContent  = hasCommittee ? 'あり' : 'なし';
+  btn.style.background = hasCommittee ? 'var(--green)' : '#eee';
+  btn.style.color      = hasCommittee ? '#333' : '#888';
+}
+}
+
+function toggleCommittee() {
+  hasCommittee = !hasCommittee;
+  const btn = document.getElementById('committeeBtn');
+  if (btn) {
+    btn.textContent      = hasCommittee ? 'あり' : 'なし';
+    btn.style.background = hasCommittee ? 'var(--green)' : '#eee';
+    btn.style.color      = hasCommittee ? '#333' : '#888';
+  }
+  saveToFirebase();
 }
 
 function addItem() {
