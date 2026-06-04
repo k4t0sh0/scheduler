@@ -550,6 +550,37 @@ function renderStep4() {
     text += `【ホワイトボード】\n${whiteboardText}\n\n`;
   }
 
+  // 委員会
+if (hasCommittee) {
+  text += `委員会：あり\n\n`;
+}
+
+// 手紙・提出物
+const validLetters = lettersData.filter(l => l.name || l.date);
+if (validLetters.length) {
+  text += '【手紙・提出物】\n';
+  text += validLetters.map(l => {
+    const d = l.date ? `（${l.date}）` : '';
+    return `・${l.name}${d}`;
+  }).join('\n');
+  text += '\n\n';
+}
+
+// テスト
+const validTests = testsData.filter(t => t.testName || t.subject);
+if (validTests.length) {
+  text += '【テスト】\n';
+  text += validTests.map(t => {
+    const name    = t.testName || '';
+    const subject = t.subject  ? `【${t.subject}】` : '';
+    const content = t.content  ? ` ${t.content}`    : '';
+    const date    = t.date     ? `（${t.date}）`     : '';
+    const url     = t.driveUrl ? `\n  範囲表：${t.driveUrl}` : '';
+    return `・${name}${subject}${content}${date}${url}`;
+  }).join('\n');
+  text += '\n\n';
+}
+
   document.getElementById('previewBox').textContent = text;
 }
 
