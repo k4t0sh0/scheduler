@@ -728,7 +728,7 @@ document.getElementById('testList').innerHTML = testsData.map((t, i) => `
       <select class="manage-input select-test" style="flex:1;"
         oninput="testsData[${i}].testName=this.value; saveToFirebase()">
         <option value="">テスト名を選択</option>
-        ${['前期中間テスト','前期期末テスト','後期中間テスト','学年末テスト','単元テスト','実力テスト'].map(n =>
+        ${['前期中間テスト','前期期末技能テスト','前期期末テスト','後期中間テスト','後期期末技能テスト','学年末テスト','単元テスト','実力テスト'].map(n =>
           `<option value="${n}" ${t.testName === n ? 'selected' : ''}>${n}</option>`
         ).join('')}
       </select>
