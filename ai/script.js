@@ -1996,10 +1996,21 @@ function confirmAIResult() {
   );
 
   // -------------------------
-  // 行事
+  // 行事・ホワイトボード
   // -------------------------
 
-  whiteboardText = result.events.join("\n");
+  if (typeof result.event === "string") {
+    whiteboardText = result.event.trim();
+  } else if (Array.isArray(result.events)) {
+    // 念のため旧形式にも対応
+    whiteboardText = result.events
+      .filter((event) => typeof event === "string")
+      .map((event) => event.trim())
+      .filter(Boolean)
+      .join("\n");
+  } else {
+    whiteboardText = "";
+  }
 
   // -------------------------
   // テスト
