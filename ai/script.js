@@ -1393,49 +1393,278 @@ let pendingAIResult = null;
 // ========================================
 // AI解析結果を確認画面に表示
 // ========================================
+// ========================================
+// AI解析結果確認モーダル
+// ========================================
 
 function showAIResultPreview(result) {
-  console.log("AI解析結果を確認画面へ:", result);
-
-  // AI結果を一時保存
-  pendingAIResult = JSON.parse(JSON.stringify(result || {}));
-
+  // ----------------------------------------
   // 既存モーダルがあれば削除
-  const oldModal = document.getElementById("aiResultModal");
+  // ----------------------------------------
+
+  const oldModal = document.getElementById("aiResultPreviewModal");
 
   if (oldModal) {
     oldModal.remove();
   }
 
-  // ========================================
-  // モーダル
-  // ========================================
+  // ----------------------------------------
+  // AI結果を保存
+  // ----------------------------------------
+
+  pendingAIResult = result;
+
+  // ----------------------------------------
+  // 日付
+  // ----------------------------------------
+
+  let dateText = "";
+
+  if (result.date) {
+    dateText = result.date;
+  } else if (typeof selectedDate !== "undefined" && selectedDate) {
+    dateText = selectedDate;
+  } else if (typeof currentDate !== "undefined" && currentDate) {
+    dateText = currentDate;
+  } else {
+    dateText = "日付情報なし";
+  }
+
+  // ----------------------------------------
+  // 予定
+  // ----------------------------------------
+
+  const schedule = Array.isArray(result.schedule) ? result.schedule : [];
+
+  let scheduleHTML = "";
+
+  if (schedule.length === 0) {
+    scheduleHTML = `
+      <div class="ai-result-empty">
+        予定はありません
+      </div>
+    `;
+  } else {
+    scheduleHTML = schedule
+      .map((item) => {
+        const period =
+          item.period !== undefined &&
+          item.period !== null &&
+          item.period !== ""
+            ? `${item.period}時間目`
+            : "";
+
+        const subject = item.subject || "";
+
+        const description = item.description || "";
+
+        return `
+          <div class="ai-result-schedule-item">
+
+            <div class="ai-result-period">
+              ${escapeHTML(period)}
+            </div>
+
+            <div class="ai-result-schedule-content">
+
+              <div class="ai-result-subject">
+                ${escapeHTML(subject)}
+              </div>
+
+              ${
+                description
+                  ? `
+                    <div class="ai-result-description">
+                      ${escapeHTML(description)}
+                    </div>
+                  `
+                  : ""
+              }
+
+            </div>
+
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  // ----------------------------------------
+  // 持ち物
+  // ----------------------------------------
+
+  const items = Array.isArray(result.items) ? result.items : [];
+
+  let itemsHTML = "";
+
+  if (items.length === 0) {
+    itemsHTML = `
+      <div class="ai-result-empty">
+        持ち物はありません
+      </div>
+    `;
+  } else {
+    itemsHTML = `
+      <div class="ai-result-items">
+
+        ${items
+          .map(
+            (item) => `
+            <div class="ai-result-item">
+              <span class="ai-result-check">✓</span>
+              <span>
+                ${escapeHTML(String(item))}
+              </span>
+            </div>
+          `,
+          )
+          .join("")}
+
+      </div>
+    `;
+  }
+
+  // ----------------------------------------
+  // 授業数・下校時間
+  // ----------------------------------------
+
+  let classInfo = "";
+
+  if (result.classCount !== undefined && result.classCount !== null) {
+    classInfo += `
+      <div class="ai-result-info-row">
+
+        <span class="ai-result-info-label">
+          授業数
+        </span>
+
+        <span class="ai-result-info-value">
+          ${escapeHTML(String(result.classCount))}時間
+        </span>
+
+      </div>
+    `;
+  }
+
+  if (
+    result.dismissalHour !== undefined &&
+    result.dismissalHour !== null &&
+    result.dismissalHour !== ""
+  ) {
+    const hour = String(result.dismissalHour).padStart(2, "0");
+
+    const min =
+      result.dismissalMin !== undefined &&
+      result.dismissalMin !== null &&
+      result.dismissalMin !== ""
+        ? String(result.dismissalMin).padStart(2, "0")
+        : "00";
+
+    classInfo += `
+      <div class="ai-result-info-row">
+
+        <span class="ai-result-info-label">
+          下校時間
+        </span>
+
+        <span class="ai-result-info-value">
+          ${hour}:${min}
+        </span>
+
+      </div>
+    `;
+  }
+
+  if (result.classDuration !== undefined && result.classDuration !== null) {
+    classInfo += `
+      <div class="ai-result-info-row">
+
+        <span class="ai-result-info-label">
+          授業時間
+        </span>
+
+        <span class="ai-result-info-value">
+          ${escapeHTML(String(result.classDuration))}分
+        </span>
+
+      </div>
+    `;
+  }
+
+  if (!classInfo) {
+    classInfo = `
+      <div class="ai-result-empty">
+        授業数・下校時間の情報はありません
+      </div>
+    `;
+  }
+
+  // ----------------------------------------
+  // ホワイトボード
+  // ----------------------------------------
+
+  let eventText = "";
+
+  if (typeof result.event === "string") {
+    eventText = result.event.trim();
+  } else if (Array.isArray(result.events)) {
+    eventText = result.events.filter(Boolean).join("\n");
+  }
+
+  let eventHTML = "";
+
+  if (eventText) {
+    eventHTML = `
+      <div class="ai-result-event-text">
+        ${escapeHTML(eventText).replace(/\n/g, "<br>")}
+      </div>
+    `;
+  } else {
+    eventHTML = `
+      <div class="ai-result-empty">
+        ホワイトボードから読み取った情報はありません
+      </div>
+    `;
+  }
+
+  // ----------------------------------------
+  // モーダル作成
+  // ----------------------------------------
 
   const modal = document.createElement("div");
 
-  modal.id = "aiResultModal";
+  modal.id = "aiResultPreviewModal";
+
+  modal.className = "ai-result-preview-modal";
 
   modal.innerHTML = `
 
     <div class="ai-result-overlay">
 
-      <div class="ai-result-modal">
+      <div class="ai-result-dialog">
+
+
+        <!-- ============================== -->
+        <!-- ヘッダー -->
+        <!-- ============================== -->
 
         <div class="ai-result-header">
 
           <div>
+
             <div class="ai-result-title">
-              🔍 AI解析結果を確認
+              ✨ AI解析結果
             </div>
 
             <div class="ai-result-subtitle">
-              内容を確認・修正してからOKを押してください
+              内容を確認してから予定表に反映できます
             </div>
+
           </div>
 
           <button
             class="ai-result-close"
-            onclick="cancelAIResult()"
+            onclick="closeAIResultPreview()"
           >
             ×
           </button>
@@ -1443,299 +1672,83 @@ function showAIResultPreview(result) {
         </div>
 
 
+        <!-- ============================== -->
+        <!-- 内容 -->
+        <!-- ============================== -->
+
         <div class="ai-result-body">
 
-          <!-- ============================== -->
-          <!-- 日付 -->
-          <!-- ============================== -->
 
-          <div class="ai-result-section">
+          <!-- 日付 -->
+
+          <section class="ai-result-section">
 
             <div class="ai-result-section-title">
               📅 日付
             </div>
 
-            <input
-              id="aiPreviewDate"
-              class="ai-preview-input"
-              type="text"
-              value="${escapeAIHtml(result?.date || "")}"
-              placeholder="日付"
-            >
+            <div class="ai-result-date">
+              ${escapeHTML(dateText)}
+            </div>
 
-          </div>
+          </section>
 
 
-          <!-- ============================== -->
-          <!-- 時間割 -->
-          <!-- ============================== -->
+          <!-- 予定 -->
 
-          <div class="ai-result-section">
+          <section class="ai-result-section">
 
             <div class="ai-result-section-title">
-              📚 時間割
+              📚 予定
             </div>
 
-            <div id="aiPreviewSchedule">
-
-              ${
-                Array.isArray(result?.schedule) && result.schedule.length
-                  ? result.schedule
-                      .map(
-                        (item, index) => `
-                          <div
-                            class="ai-preview-row ai-schedule-row"
-                            data-index="${index}"
-                          >
-
-                            <div class="ai-period">
-                              ${item.period || index + 1}時間目
-                            </div>
-
-                            <input
-                              class="ai-preview-input ai-subject"
-                              value="${escapeAIHtml(item.subject || "")}"
-                              placeholder="教科"
-                            >
-
-                            <input
-                              class="ai-preview-input ai-description"
-                              value="${escapeAIHtml(item.description || "")}"
-                              placeholder="授業内容"
-                            >
-
-                            <button
-                              class="ai-delete-btn"
-                              onclick="removeAIPreviewSchedule(${index})"
-                            >
-                              ×
-                            </button>
-
-                          </div>
-                        `,
-                      )
-                      .join("")
-                  : `
-                    <div class="ai-empty">
-                      時間割は見つかりませんでした
-                    </div>
-                  `
-              }
-
+            <div class="ai-result-schedule">
+              ${scheduleHTML}
             </div>
 
-          </div>
+          </section>
 
 
-          <!-- ============================== -->
           <!-- 持ち物 -->
-          <!-- ============================== -->
 
-          <div class="ai-result-section">
+          <section class="ai-result-section">
 
             <div class="ai-result-section-title">
               🎒 持ち物
             </div>
 
-            <div id="aiPreviewItems">
+            ${itemsHTML}
 
-              ${
-                Array.isArray(result?.items) && result.items.length
-                  ? result.items
-                      .map(
-                        (item, index) => `
-                          <div
-                            class="ai-preview-item"
-                            data-index="${index}"
-                          >
-
-                            <input
-                              class="ai-preview-input ai-item-input"
-                              value="${escapeAIHtml(item || "")}"
-                              placeholder="持ち物"
-                            >
-
-                            <button
-                              class="ai-delete-btn"
-                              onclick="removeAIPreviewItem(${index})"
-                            >
-                              ×
-                            </button>
-
-                          </div>
-                        `,
-                      )
-                      .join("")
-                  : `
-                    <div class="ai-empty">
-                      持ち物は見つかりませんでした
-                    </div>
-                  `
-              }
-
-            </div>
-
-            <button
-              class="ai-add-btn"
-              onclick="addAIPreviewItem()"
-            >
-              ＋ 持ち物を追加
-            </button>
-
-          </div>
+          </section>
 
 
-          <!-- ============================== -->
-          <!-- テスト -->
-          <!-- ============================== -->
+          <!-- 授業数・下校時間 -->
 
-          <div class="ai-result-section">
+          <section class="ai-result-section">
 
             <div class="ai-result-section-title">
-              📝 テスト
+              ⏰ 授業数・下校時間
             </div>
 
-            <div id="aiPreviewTests">
-
-              ${
-                Array.isArray(result?.tests) && result.tests.length
-                  ? result.tests
-                      .map(
-                        (test, index) => `
-                          <div
-                            class="ai-test-card"
-                            data-index="${index}"
-                          >
-
-                            <input
-                              class="ai-preview-input ai-test-subject"
-                              value="${escapeAIHtml(test.subject || "")}"
-                              placeholder="教科"
-                            >
-
-                            <input
-                              class="ai-preview-input ai-test-name"
-                              value="${escapeAIHtml(test.name || "")}"
-                              placeholder="テスト名"
-                            >
-
-                            <input
-                              class="ai-preview-input ai-test-date"
-                              value="${escapeAIHtml(test.date || "")}"
-                              placeholder="日付"
-                            >
-
-                            <input
-                              class="ai-preview-input ai-test-range"
-                              value="${escapeAIHtml(test.range || "")}"
-                              placeholder="範囲"
-                            >
-
-                            <button
-                              class="ai-delete-btn"
-                              onclick="removeAIPreviewTest(${index})"
-                            >
-                              ×
-                            </button>
-
-                          </div>
-                        `,
-                      )
-                      .join("")
-                  : `
-                    <div class="ai-empty">
-                      テストは見つかりませんでした
-                    </div>
-                  `
-              }
-
+            <div class="ai-result-info">
+              ${classInfo}
             </div>
 
-            <button
-              class="ai-add-btn"
-              onclick="addAIPreviewTest()"
-            >
-              ＋ テストを追加
-            </button>
-
-          </div>
+          </section>
 
 
-          <!-- ============================== -->
-          <!-- 行事 -->
-          <!-- ============================== -->
+          <!-- ホワイトボード -->
 
-          <div class="ai-result-section">
+          <section class="ai-result-section">
 
             <div class="ai-result-section-title">
-              📢 行事
+              📋 ホワイトボード
             </div>
 
-            <div id="aiPreviewEvents">
+            ${eventHTML}
 
-              ${
-                Array.isArray(result?.events) && result.events.length
-                  ? result.events
-                      .map(
-                        (event, index) => `
-                          <div
-                            class="ai-preview-item"
-                            data-index="${index}"
-                          >
+          </section>
 
-                            <input
-                              class="ai-preview-input ai-event-input"
-                              value="${escapeAIHtml(event || "")}"
-                              placeholder="行事"
-                            >
-
-                            <button
-                              class="ai-delete-btn"
-                              onclick="removeAIPreviewEvent(${index})"
-                            >
-                              ×
-                            </button>
-
-                          </div>
-                        `,
-                      )
-                      .join("")
-                  : `
-                    <div class="ai-empty">
-                      行事は見つかりませんでした
-                    </div>
-                  `
-              }
-
-            </div>
-
-            <button
-              class="ai-add-btn"
-              onclick="addAIPreviewEvent()"
-            >
-              ＋ 行事を追加
-            </button>
-
-          </div>
-
-
-          <!-- ============================== -->
-          <!-- その他メモ -->
-          <!-- ============================== -->
-
-          <div class="ai-result-section">
-
-            <div class="ai-result-section-title">
-              💬 その他
-            </div>
-
-            <textarea
-              id="aiPreviewMemo"
-              class="ai-preview-textarea"
-              placeholder="その他の情報"
-            >${escapeAIHtml(result?.memo || "")}</textarea>
-
-          </div>
 
         </div>
 
@@ -1747,20 +1760,21 @@ function showAIResultPreview(result) {
         <div class="ai-result-footer">
 
           <button
-            class="ai-cancel-button"
-            onclick="cancelAIResult()"
+            class="ai-result-cancel"
+            onclick="closeAIResultPreview()"
           >
             キャンセル
           </button>
 
           <button
-            class="ai-ok-button"
-            onclick="confirmAIResult()"
+            class="ai-result-edit"
+            onclick="editAIResult()"
           >
-            ✓ この内容で反映
+            ✏️ 編集して反映
           </button>
 
         </div>
+
 
       </div>
 
@@ -1768,6 +1782,46 @@ function showAIResultPreview(result) {
   `;
 
   document.body.appendChild(modal);
+}
+
+// ========================================
+// HTMLエスケープ
+// ========================================
+
+function escapeHTML(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// ========================================
+// AI解析結果モーダルを閉じる
+// ========================================
+
+function closeAIResultPreview() {
+  const modal = document.getElementById("aiResultPreviewModal");
+
+  if (modal) {
+    modal.remove();
+  }
+}
+
+// ========================================
+// AI解析結果を編集して反映
+// ========================================
+
+function editAIResult() {
+  if (!pendingAIResult) {
+    alert("AI解析結果がありません。");
+
+    return;
+  }
+
+  // 既存の確認・反映処理を使用
+  confirmAIResult();
 }
 
 // ========================================
@@ -1971,38 +2025,53 @@ function collectAIResultFromPreview() {
 // ========================================
 
 function confirmAIResult() {
-  const result = collectAIResultFromPreview();
+  // ========================================
+  // AI解析結果を取得
+  // ========================================
+
+  if (!pendingAIResult) {
+    alert("AI解析結果がありません。");
+
+    return;
+  }
+
+  const result = pendingAIResult;
 
   console.log("AI確認済み結果:", result);
 
-  // -------------------------
+  // ========================================
   // 時間割
-  // -------------------------
+  // ========================================
 
-  scheduleData = result.schedule.map((item, index) => ({
-    period: item.period || index + 1,
+  scheduleData = Array.isArray(result.schedule)
+    ? result.schedule.map((item, index) => ({
+        period: item.period || index + 1,
 
-    subject: item.subject || "",
+        subject: item.subject || "",
 
-    description: item.description || "",
-  }));
+        description: item.description || "",
+      }))
+    : [];
 
-  // -------------------------
+  // ========================================
   // 持ち物
-  // -------------------------
+  // ========================================
 
-  itemsData = result.items.filter(
-    (item) => typeof item === "string" && item.trim(),
-  );
+  itemsData = Array.isArray(result.items)
+    ? result.items
+        .filter((item) => typeof item === "string" && item.trim())
+        .map((item) => item.trim())
+    : [];
 
-  // -------------------------
+  // ========================================
   // 行事・ホワイトボード
-  // -------------------------
+  // ========================================
 
   if (typeof result.event === "string") {
     whiteboardText = result.event.trim();
   } else if (Array.isArray(result.events)) {
-    // 念のため旧形式にも対応
+    // 旧形式にも対応
+
     whiteboardText = result.events
       .filter((event) => typeof event === "string")
       .map((event) => event.trim())
@@ -2012,52 +2081,104 @@ function confirmAIResult() {
     whiteboardText = "";
   }
 
-  // -------------------------
-  // テスト
-  // -------------------------
+  // ========================================
+  // 授業数
+  // ========================================
 
-  testsData = result.tests.map((test) => ({
-    subject: test.subject || "",
+  if (result.classCount !== undefined && result.classCount !== null) {
+    classCount = Number(result.classCount) || 0;
+  }
 
-    content: [test.name, test.range ? `範囲: ${test.range}` : ""]
-      .filter(Boolean)
-      .join(" / "),
+  // ========================================
+  // 授業時間
+  // ========================================
 
-    date: test.date || "",
+  if (result.classDuration !== undefined && result.classDuration !== null) {
+    classDuration = Number(result.classDuration) || 0;
+  }
 
-    driveUrl: "",
-  }));
+  // ========================================
+  // 下校時間
+  // ========================================
 
-  // -------------------------
-  // モーダルを閉じる
-  // -------------------------
+  if (result.dismissalHour !== undefined && result.dismissalHour !== null) {
+    dismissalHour = Number(result.dismissalHour) || 0;
+  }
 
-  const modal = document.getElementById("aiResultModal");
+  if (result.dismissalMin !== undefined && result.dismissalMin !== null) {
+    dismissalMin = Number(result.dismissalMin) || 0;
+  }
+
+  // ========================================
+  // 確認
+  // ========================================
+
+  console.log("反映するschedule:", scheduleData);
+
+  console.log("反映するitems:", itemsData);
+
+  console.log("反映するevent:", whiteboardText);
+
+  console.log("授業数:", classCount);
+
+  console.log("授業時間:", classDuration);
+
+  console.log("下校:", dismissalHour, dismissalMin);
+
+  // ========================================
+  // AI結果モーダルを閉じる
+  // ========================================
+
+  const modal = document.getElementById("aiResultPreviewModal");
 
   if (modal) {
     modal.remove();
   }
 
+  // ========================================
+  // pendingAIResultをクリア
+  // ========================================
+
   pendingAIResult = null;
 
-  // -------------------------
+  // ========================================
   // 入力画面へ
-  // -------------------------
+  // ========================================
 
-  document.getElementById("homeView").style.display = "none";
+  const homeView = document.getElementById("homeView");
 
-  document.getElementById("wizardView").style.display = "flex";
+  const wizardView = document.getElementById("wizardView");
 
-  document.getElementById("headerCenter").innerHTML = `
+  if (homeView) {
+    homeView.style.display = "none";
+  }
 
-    <button
-      class="header-mode-btn manual"
-      onclick="showHomeView()"
-    >
-      ⌨️ 自分で入力
-    </button>
+  if (wizardView) {
+    wizardView.style.display = "flex";
+  }
 
-  `;
+  // ========================================
+  // ヘッダー
+  // ========================================
+
+  const headerCenter = document.getElementById("headerCenter");
+
+  if (headerCenter) {
+    headerCenter.innerHTML = `
+
+      <button
+        class="header-mode-btn manual"
+        onclick="showHomeView()"
+      >
+        ⌨️ 自分で入力
+      </button>
+
+    `;
+  }
+
+  // ========================================
+  // 入力ステップ
+  // ========================================
 
   currentStep = 1;
 
@@ -2065,15 +2186,14 @@ function confirmAIResult() {
 
   renderCurrentStep();
 
-  // -------------------------
+  // ========================================
   // Firebase保存
-  // -------------------------
+  // ========================================
 
   saveToFirebase();
 
   console.log("AI解析結果をアプリへ反映しました");
 }
-
 // ========================================
 // キャンセル
 // ========================================
