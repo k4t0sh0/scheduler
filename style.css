@@ -892,6 +892,45 @@ body {
   opacity: 0.85;
 }
 
+.send-schedule-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.send-schedule-label {
+  color: #555;
+  font-size: 0.9em;
+}
+
+.send-schedule-btn {
+  min-width: 112px;
+  padding: 9px 20px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius-pill);
+  background: #f1f1f1;
+  color: #777;
+  font-family: inherit;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    opacity 0.2s;
+}
+
+.send-schedule-btn.enabled {
+  border-color: #9acb7d;
+  background: var(--green);
+  color: #29451c;
+}
+
+.send-schedule-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 /* ---- Step 4: プレビュー ---- */
 .step4-layout {
   display: grid;
@@ -1109,5 +1148,260 @@ body {
   .manage-layout {
     grid-template-columns: 1fr;
     gap: 28px;
+  }
+}
+
+/* ========== iPhone / narrow touch screens ========== */
+@media (max-width: 600px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body,
+  #appScreen {
+    min-height: 100svh;
+  }
+
+  .app-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+    gap: 8px;
+  }
+
+  .app-title {
+    font-size: 1.15em;
+  }
+
+  .header-right {
+    grid-column: 2;
+    grid-row: 1;
+    gap: 7px;
+  }
+
+  .user-email {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .avatar-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .logout-small {
+    min-height: 40px;
+    padding: 6px 9px;
+  }
+
+  .header-center {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+  }
+
+  .header-mode-btn {
+    min-height: 44px;
+    width: 100%;
+  }
+
+  .main-view {
+    padding: 20px 16px calc(124px + env(safe-area-inset-bottom));
+  }
+
+  .home-layout,
+  .step2-layout,
+  .step3-layout,
+  .step4-layout,
+  .manage-layout {
+    width: 100%;
+    gap: 20px;
+  }
+
+  .home-layout {
+    align-content: start;
+  }
+
+  .home-left {
+    gap: 18px;
+  }
+
+  .mode-select {
+    align-items: stretch;
+  }
+
+  .btn-mode {
+    width: 100%;
+    min-height: 50px;
+  }
+
+  .home-right,
+  .memo-box {
+    min-height: 170px;
+  }
+
+  .memo-box {
+    padding: 16px;
+  }
+
+  .step-indicator {
+    justify-content: space-between;
+    gap: 3px;
+    padding: 0;
+  }
+
+  .step-item {
+    min-width: 0;
+  }
+
+  .step-circle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .step-label {
+    font-size: 0.62em;
+    white-space: nowrap;
+  }
+
+  .step-line {
+    min-width: 6px;
+    max-width: none;
+    margin-bottom: 18px;
+  }
+
+  .schedule-inputs {
+    gap: 10px;
+  }
+
+  .schedule-row {
+    gap: 7px;
+  }
+
+  .subject-select {
+    width: 82px;
+    padding: 9px 7px;
+  }
+
+  .desc-input {
+    min-width: 0;
+    padding: 9px 10px;
+  }
+
+  .time-column {
+    gap: 12px;
+  }
+
+  .time-row {
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .time-label {
+    min-width: 56px;
+  }
+
+  .whiteboard-input {
+    min-height: 220px;
+  }
+
+  .recipient-list,
+  .date-toggle {
+    flex-wrap: wrap;
+  }
+
+  .recipient-btn,
+  .add-recipient-btn,
+  .date-btn {
+    min-height: 44px;
+  }
+
+  .date-column {
+    width: 100%;
+  }
+
+  .date-btn {
+    padding: 9px 14px;
+  }
+
+  .date-input {
+    min-height: 44px;
+  }
+
+  .manage-row {
+    align-items: stretch;
+  }
+
+  .manage-input {
+    min-height: 44px;
+  }
+
+  .manage-input.date {
+    width: 100%;
+  }
+
+  .preview-box {
+    min-height: 220px;
+    padding: 18px;
+    overflow-wrap: anywhere;
+  }
+
+  .preview-actions {
+    gap: 8px;
+  }
+
+  .preview-action-item {
+    min-height: 44px;
+  }
+
+  .send-btn {
+    width: 52px;
+    height: 52px;
+  }
+
+  .wizard-nav {
+    padding-top: 0;
+    padding-bottom: 8px;
+  }
+
+  .nav-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .day-wheel-wrapper {
+    bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  .day-wheel {
+    gap: 5px;
+    padding: 6px;
+  }
+
+  .day-wheel-item {
+    width: 40px;
+    height: 40px;
+  }
+
+  .calendar-view {
+    padding: 20px 14px calc(110px + env(safe-area-inset-bottom));
+  }
+
+  .calendar-frame-wrap {
+    height: 65svh;
+  }
+
+  .auth-box {
+    width: min(100% - 32px, 360px);
+    padding: 36px 24px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
   }
 }

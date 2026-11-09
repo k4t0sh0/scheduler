@@ -17,6 +17,7 @@ let dismissalHour = 16;
 let dismissalMin = 50;
 let selectedRecipients = [];
 let scheduleDate = "tomorrow";
+let sendSchedule = false;
 let customDateValue = "";
 let customTimeValue = "";
 let lettersData = [];
@@ -131,8 +132,6 @@ function getErrorMessage(code) {
     "auth/invalid-email": "メールアドレスの形式が正しくありません",
     "auth/user-not-found": "ユーザーが見つかりません",
     "auth/wrong-password": "パスワードが間違っています",
-    "auth/email-already-in-use": "このメールアドレスは既に使用されています",
-    "auth/weak-password": "パスワードは6文字以上で設定してください",
     "auth/too-many-requests":
       "試行回数が多すぎます。しばらくしてからお試しください",
   };
@@ -157,44 +156,12 @@ function showApp() {
   initDayButtons();
 }
 
-function showLogin() {
-  const loginForm = document.getElementById("loginForm");
-  const registerForm = document.getElementById("registerForm");
-  const authError = document.getElementById("authError");
-  if (loginForm) loginForm.style.display = "block";
-  if (registerForm) registerForm.style.display = "none";
-  if (authError) authError.textContent = "";
-}
-
-function showRegister() {
-  const loginForm = document.getElementById("loginForm");
-  const registerForm = document.getElementById("registerForm");
-  const authError = document.getElementById("authError");
-  if (loginForm) loginForm.style.display = "none";
-  if (registerForm) registerForm.style.display = "block";
-  if (authError) authError.textContent = "";
-}
-
 async function login() {
   const email = document.getElementById("loginEmail")?.value || "";
   const password = document.getElementById("loginPassword")?.value || "";
   try {
     if (!auth) return;
     await auth.signInWithEmailAndPassword(email, password);
-    const authError = document.getElementById("authError");
-    if (authError) authError.textContent = "";
-  } catch (e) {
-    const authError = document.getElementById("authError");
-    if (authError) authError.textContent = getErrorMessage(e.code);
-  }
-}
-
-async function register() {
-  const email = document.getElementById("registerEmail")?.value || "";
-  const password = document.getElementById("registerPassword")?.value || "";
-  try {
-    if (!auth) return;
-    await auth.createUserWithEmailAndPassword(email, password);
     const authError = document.getElementById("authError");
     if (authError) authError.textContent = "";
   } catch (e) {
@@ -254,6 +221,8 @@ function loadData() {
     if (Array.isArray(data.recipients)) recipientList = data.recipients;
     if (Array.isArray(data.letters)) lettersData = data.letters;
     if (Array.isArray(data.tests)) testsData = data.tests;
+    sendSchedule = data.sendSchedule === true;
+    updateSendScheduleButton();
     if (
       typeof data.scheduledDate === "string" &&
       /^\d{4}-\d{2}-\d{2}$/.test(data.scheduledDate)
@@ -603,6 +572,45 @@ function renderStep3() {
     customDateTimeWrap.style.display =
       scheduleDate === "custom" ? "block" : "none";
   updateSelectedDateDisplay();
+  updateSendScheduleButton();
+}
+
+function updateSendScheduleButton() {
+  const button = document.getElementById("sendScheduleBtn");
+  if (!button) return;
+  button.textContent = sendSchedule ? "送る" : "送らない";
+  button.classList.toggle("enabled", sendSchedule);
+  button.setAttribute("aria-pressed", String(sendSchedule));
+  button.disabled = Boolean(isAnonymous);
+  button.title = isAnonymous
+    ? "ログインユーザーのみ変更できます"
+    : "クリックして切り替え";
+}
+
+function toggleSendSchedule() {
+  if (isAnonymous) return;
+  const nextValue = !sendSchedule;
+  const button = document.getElementById("sendScheduleBtn");
+  if (button) button.disabled = true;
+
+  if (!database || !currentUser) {
+    sendSchedule = nextValue;
+    updateSendScheduleButton();
+    return;
+  }
+
+  database
+    .ref("schoolSchedule/shared/sendSchedule")
+    .set(nextValue)
+    .then(() => {
+      sendSchedule = nextValue;
+      updateSendScheduleButton();
+    })
+    .catch((error) => {
+      console.error("送信設定の保存に失敗しました", error);
+      updateSendScheduleButton();
+      alert("送信設定を保存できませんでした。通信状態を確認してください。");
+    });
 }
 
 function toggleRecipient(email) {
@@ -968,15 +976,6 @@ function handleDocumentClick(event) {
     case "login":
       login();
       break;
-    case "register":
-      register();
-      break;
-    case "show-register":
-      showRegister();
-      break;
-    case "show-login":
-      showLogin();
-      break;
     case "anonymous-login":
       anonymousLogin();
       break;
@@ -1006,6 +1005,9 @@ function handleDocumentClick(event) {
       break;
     case "confirm-date-time":
       confirmDateTime();
+      break;
+    case "toggle-send-schedule":
+      toggleSendSchedule();
       break;
     case "add-letter":
       addLetter();

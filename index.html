@@ -2,7 +2,10 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <title>Scheduler app</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
@@ -21,21 +24,6 @@
           <input type="email" id="loginEmail" placeholder="メールアドレス" />
           <input type="password" id="loginPassword" placeholder="パスワード" />
           <button data-action="login">ログイン</button>
-          <p>
-            アカウントをお持ちでない方
-            <a href="#" data-action="show-register">新規登録</a>
-          </p>
-        </div>
-
-        <div id="registerForm" style="display: none">
-          <input type="email" id="registerEmail" placeholder="メールアドレス" />
-          <input
-            type="password"
-            id="registerPassword"
-            placeholder="パスワード（6文字以上）"
-          />
-          <button data-action="register">登録</button>
-          <p><a href="#" data-action="show-login">ログインに戻る</a></p>
         </div>
 
         <div class="auth-divider">または</div>
@@ -294,6 +282,18 @@
                 <button class="confirm-btn" data-action="confirm-date-time">
                   決定
                 </button>
+                <div class="send-schedule-control">
+                  <span class="send-schedule-label">予定を送る？</span>
+                  <button
+                    id="sendScheduleBtn"
+                    class="send-schedule-btn"
+                    type="button"
+                    data-action="toggle-send-schedule"
+                    aria-pressed="false"
+                  >
+                    送らない
+                  </button>
+                </div>
               </div>
             </div>
           </div>
